@@ -1,0 +1,61 @@
+global
+	daemon
+	maxconn 256
+
+
+defaults
+	mode tcp
+	timeout connect 5000ms
+	timeout client 5000ms
+	timeout server 5000ms
+
+
+frontend http
+	bind :8080
+	default_backend stats
+
+
+backend stats
+	mode http
+	stats enable
+	stats uri /
+	stats refresh 1s
+	stats show-legends
+	stats admin if TRUE
+
+
+frontend redis-write
+	bind *:6381
+	default_backend redis-primary
+
+
+frontend redis-read
+       bind *:6382
+       default_backend redis-online
+
+
+backend redis-primary
+	mode tcp
+	balance first
+	option tcp-check
+
+	tcp-check send auth\ {{ redis_server_auth_pass }}\r\n
+	tcp-check send info\ replication\r\n
+	tcp-check expect string role:master
+
+{% for item in haproxy_redis_backend %}
+        server {{ item.host }} {{ item.ip }}:6379 maxconn 50000 check inter {{ item.interval }}
+{% endfor %}
+
+backend redis-online
+	mode tcp
+	balance roundrobin
+	option tcp-check
+
+	tcp-check send auth\ {{ redis_server_auth_pass }}\r\n
+	tcp-check send PING\r\n
+	tcp-check expect string +PONG
+
+{% for item in haproxy_redis_backend %}
+        server {{ item.host }} {{ item.ip }}:6379 maxconn 50000 check inter {{ item.interval }}
+{% endfor %}

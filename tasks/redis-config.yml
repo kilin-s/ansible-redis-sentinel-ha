@@ -1,0 +1,78 @@
+---
+
+- name: Copy redis config
+  template:
+    src: redis-server.conf.j2
+    dest: /etc/redis-server/redis-server.conf
+    owner: redis
+    group: redis
+    mode: 0640
+  register: _redis_config
+
+
+- name: Copy redis server systemd unit
+  copy:     
+    src: redis-server.service
+    dest: /etc/systemd/system/redis-server.service
+    owner: root               
+    group: root               
+    mode: 0644              
+  register: _redis_systemd_unit
+
+
+- name: Restart replicas
+  systemd:
+    name: redis-server
+    state: restarted
+    daemon_reload: true
+  throttle: 1
+  when: 
+    - redis_master == false
+    - (_redis_config.changed or _redis_systemd_unit.changed)
+
+
+- name: Check redis secondary nodes has started
+  wait_for:
+    port: 6379 
+    state: started
+    delay: 5
+  when:
+    - redis_master == false
+    - (_redis_config.changed or _redis_systemd_unit.changed)
+
+
+- name: Manual failover before master restart
+  shell: /opt/redis/bin/redis-cli -h 127.0.0.1 -p 5000 SENTINEL FAILOVER mymaster
+  when:
+    - redis_master == true
+    - (_redis_config.changed or _redis_systemd_unit.changed)
+
+
+- name: Wait 10 sec for failover
+  wait_for:
+    timeout: 20
+  when:
+    - redis_master == true
+    - (_redis_config.changed or _redis_systemd_unit.changed)
+
+
+- name: Restart old Master
+  systemd:
+    name: redis-server
+    state: restarted
+    daemon_reload: true
+  throttle: 1
+  when:
+    - redis_master == true
+    - (_redis_config.changed or _redis_systemd_unit.changed)
+
+
+- name: Check redis old master has started
+  wait_for:
+    port: 6379 
+    state: started
+    delay: 5
+  when:
+    - redis_master == true
+    - (_redis_config.changed or _redis_systemd_unit.changed)
+

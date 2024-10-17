@@ -1,0 +1,27 @@
+---
+
+redis_bootstrap:  true
+redis_master: false
+redis_server_master_ip: ""
+redis_server_auth_pass: ""
+redis_server_bind_ip: "{{ ansible_facts.eth0.ipv4.address }}"
+
+redis_server_maxmemory: "{{ ansible_facts.memtotal_mb - 1024 }}mb"
+
+keepalived_virtual_ip: "" 
+keepalived_vrrp_state: "" #state of keepalived MASTER|BACKUP
+keepalived_virtual_router_id: "" #unic identifier for cluster 
+keepalived_instance_interface: eth0
+keepalived_instance_priority: "" # instance priority
+
+
+haproxy_redis_backend:
+- host: 
+  ip: 
+  maxconn: 
+  interval:
+
+
+redis_sentinel_auth_pass: ""
+
+

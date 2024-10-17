@@ -1,0 +1,74 @@
+---
+
+- name: Check redis binary
+  stat:
+    path: /opt/redis/bin/redis-server
+  register: _redis_bin
+
+
+- name: Download redis
+  get_url:
+    url: https://packages.redis.io/redis-stack/redis-stack-server-7.2.0-v6.focal.x86_64.tar.gz
+    dest: /tmp/redis-stack-server-7.2.0-v6.focal.x86_64.tar.gz
+  when: _redis_bin.stat.exists != true
+
+
+- name: Create redis user
+  user:
+    name: redis
+
+
+- name: Create redis dirs
+  file:
+    state: directory
+    path: "{{ item.path }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - { path: "/opt/redis", owner: "root", group: "root", mode: "0755" }
+    - { path: "/etc/redis-server", owner: "redis", group: "redis", mode: "0770" }
+    - { path: "/var/lib/redis-server", owner: "redis", group: "redis", mode: "0750" }
+    - { path: "/var/log/redis-server", owner: "redis", group: "redis", mode: "0740" }
+
+
+- name: Extract binaries
+  unarchive:
+    src: /tmp/redis-stack-server-7.2.0-v6.focal.x86_64.tar.gz
+    dest: /opt/redis
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: true
+    exclude:
+    - etc
+    - share
+    extra_opts:
+    - --strip-components
+    - 2
+  when: _redis_bin.stat.exists != true
+
+
+- name: Copy Redis server config
+  template:
+    src: redis-server.conf.j2
+    dest: /etc/redis-server/redis-server.conf
+    owner: redis
+    group: redis
+    mode: 0640
+
+
+- name: Copy redis server systemd unit
+  copy:     
+    src: redis-server.service
+    dest: /etc/systemd/system/redis-server.service
+    owner: root               
+    group: root               
+    mode: 0644              
+
+
+- name: Start & enable redis
+  systemd:
+    name: redis-server
+    state: started
+    daemon_reload: true

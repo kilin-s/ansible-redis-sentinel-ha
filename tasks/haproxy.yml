@@ -1,0 +1,35 @@
+---
+
+- name: Install software-properties-common
+  apt:
+    name: software-properties-common
+    state: present
+
+
+- name: Add haproxy repo 
+  apt_repository:
+    repo: ppa:vbernat/haproxy-2.8
+
+
+- name: Install haproxy
+  apt:
+    name: haproxy=2.8.5-1ppa1~focal
+    state: present
+
+- name: Copy haproxy.cfg
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    owner: root
+    group: root
+    mode: 0644
+  notify: 
+    - Restart haproxy
+
+
+- name: Start haproxy
+  systemd:
+    name: haproxy
+    state: started
+    enabled: yes
+

@@ -1,0 +1,11 @@
+---
+#https://redis.io/docs/management/admin/
+- name: Configure mem
+  sysctl:
+    name: vm.overcommit_memory
+    value: '1'
+    state: present
+
+
+- name: Disable kernel THP
+  shell: echo never >  /sys/kernel/mm/transparent_hugepage/enabled

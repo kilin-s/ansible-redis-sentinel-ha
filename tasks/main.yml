@@ -1,0 +1,30 @@
+---
+
+- import_tasks: checks.yml
+  tags: always
+
+- import_tasks: os-config.yml
+  tags: os_config
+    
+- import_tasks: redis-server-bootstrap.yml
+  tags: redis_server
+  when: redis_bootstrap == true
+
+- import_tasks: redis-sentinel-bootstrap.yml
+  tags: redis_sentinel
+  when: redis_bootstrap == true
+
+- import_tasks: redis-config.yml
+  tags: [redis_config, never]
+  when: redis_bootstrap == false
+
+- import_tasks: redis-sentinel-config.yml
+  tags: [redis_sentinel_config, never]
+  when: redis_bootstrap == false
+
+- import_tasks: haproxy.yml
+  tags: haproxy
+  
+- import_tasks: keepalived.yml
+  tags: keepalived
+  

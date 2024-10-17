@@ -1,0 +1,14 @@
+port 5000
+
+sentinel monitor mymaster {{ redis_server_master_ip }} 6379 2
+sentinel down-after-milliseconds mymaster 5000
+sentinel failover-timeout mymaster 60000
+sentinel parallel-syncs mymaster 2
+sentinel auth-pass mymaster {{ redis_server_auth_pass }}
+
+requirepass {{ redis_sentinel_auth_pass }}
+
+loglevel debug
+logfile "/var/log/redis-server/redis-sentinel.log"
+dir "/tmp"
+

@@ -1,0 +1,4 @@
+---
+
+redis_server_bind_ip: 192.168.122.49
+keepalived_vrrp_state: BACKUP

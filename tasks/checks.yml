@@ -1,0 +1,5 @@
+---
+
+- name: Pause
+  pause:
+    prompt: "Please check that master in vars the same as in cluster. If reconfigure redis"

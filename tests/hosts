@@ -1,0 +1,4 @@
+[redis]
+host1  keepalived_instance_priority=100 
+host2  keepalived_instance_priority=90
+host3   keepalived_instance_priority=80

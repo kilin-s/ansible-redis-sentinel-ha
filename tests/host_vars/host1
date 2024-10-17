@@ -1,0 +1,8 @@
+---
+
+redis_server_bind_ip: 192.168.122.175
+redis_master: true
+
+
+keepalived_vrrp_state: MASTER
+

@@ -1,0 +1,34 @@
+---
+
+- name: Copy redis sentinel config
+  template:
+    src: redis-sentinel.conf.j2
+    dest: /etc/redis-server/redis-sentinel.conf
+    owner: redis
+    group: redis
+    mode: 0640
+  register: _redis_sentinel_config
+
+
+- name: Copy redis sentinel systemd unit
+  copy:
+    src: redis-sentinel.service
+    dest: /etc/systemd/system/redis-sentinel.service
+    owner: root
+    group: root
+    mode: 0644
+  register: _redis_sentinel_systemd_unit
+
+
+- name: Reload systemd
+  systemd:
+    name: redis-sentinel
+    state: started
+    daemon_reload: true
+  when: _redis_sentinel_config.changed or _redis_sentinel_systemd_unit.changed
+
+
+- name: Restart sentinel with pause
+  throttle: 1
+  shell: systemctl restart redis-sentinel && sleep 5
+  when: _redis_sentinel_config.changed or _redis_sentinel_systemd_unit.changed

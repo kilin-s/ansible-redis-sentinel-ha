@@ -1,0 +1,28 @@
+---
+
+
+redis_server_master_ip: 192.168.122.175
+redis_server_auth_pass: 123
+redis_sentinel_auth_pass: 1234
+
+  #redis_bootstrap: false
+
+
+keepalived_virtual_ip: 192.168.122.99
+keepalived_instance_interface: enp1s0
+keepalived_virtual_router_id: 1
+
+
+haproxy_redis_backend:
+- host: host1
+  ip: 192.168.122.175
+  maxconn: 50000
+  interval: 1s
+- host: host2
+  ip: 192.168.122.49
+  maxconn: 50000
+  interval: 1s
+- host: host3
+  ip: 192.168.122.46
+  maxconn: 50000
+  interval: 1s

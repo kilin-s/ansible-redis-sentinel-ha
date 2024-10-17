@@ -1,0 +1,23 @@
+---
+
+- name: Copy redis sentinel config
+  template:
+    src: redis-sentinel.conf.j2
+    dest: /etc/redis-server/redis-sentinel.conf
+    owner: redis
+    group: redis
+    mode: 0640
+
+- name: Copy systemd units
+  copy:
+    src: redis-sentinel.service
+    dest: /etc/systemd/system/redis-sentinel.service
+    owner: root
+    group: root
+    mode: 0644
+
+- name: start sentinel
+  systemd:
+    name: redis-sentinel
+    state: started
+    daemon_reload: true

@@ -1,0 +1,24 @@
+global_defs {
+  router_id  {{ inventory_hostname_short }}_redis_haproxy
+}
+
+vrrp_track_process track_haproxy {
+      process haproxy
+}
+
+vrrp_instance {{ inventory_hostname_short }} {
+  state {{ keepalived_vrrp_state }}
+  interface {{ keepalived_instance_interface }}
+  virtual_router_id {{ keepalived_virtual_router_id }}
+  priority {{ keepalived_instance_priority }}
+
+  virtual_ipaddress {
+   {{ keepalived_virtual_ip }}
+  }
+
+  track_process {
+         track_haproxy
+  }
+}
+
+
